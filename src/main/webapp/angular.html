@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    
+    <title>
+        Person CRUD - GNSMK
+    </title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    
+    <script>
+        angular.module('myApp', []).controller('myCtrl', function ($scope, $http) {
+            $scope.isupdate = false;
+            $http.get("/r/getAll/").then(function (response) {
+                $scope.listpersons = response.data;
+                $scope.listempty = ($scope.listpersons.length == 0);
+            });
+            
+            $scope.add = function () {
+                $http.post("/r/add", ({
+                    name: $scope.uname, age: $scope.uage
+                }));
+                location.reload();
+            }
+            
+            $scope.edit = function (id) {
+                $http.get("/r/getOne/" + id).then(function (response) {
+                    $scope.isupdate = response;
+                    $scope.oldperson = response.data;
+                });
+            }
+            
+            $scope.update = function (id) {
+                $http.post("/r/update", ({
+                    name: $scope.oldperson.name,
+                    age: $scope.oldperson.age,
+                    id: $scope.oldperson.id
+                }), function (response) {
+                    $scope.isupdate = false;
+                });
+                location.reload();
+            }
+            
+            $scope.delete = function (id) {
+                $http.get("/r/delete/" + id).then(location.reload());
+            }
+        });
+    </script>
+</head>
+
+<body>
+<div ng-app="myApp" ng-controller="myCtrl" class="container-fluid">
+
+    <div class="row" ng-hide="isupdate">
+        <div class="col-lg-4">
+            <input type="text" ng-model="uname" class="form-control" placeholder="Person Name" style="margin:1%"
+                   autofocus required/>
+        </div>
+        <div class="col-lg-4">
+            <input type="text" ng-model="uage" class="form-control" placeholder="Person Age" style="margin:1%"
+                   required/>
+        </div>
+        <div class="col">
+            <input type="button" ng-click="add()" class="btn btn-success col" style="margin:1%" value="Add Person"/>
+        </div>
+    </div>
+
+    <div class="row" ng-show="isupdate">
+        <div class="col-lg-4">
+            <input type="text" ng-model="oldperson.name" class="form-control" style="margin:1%" autofocus required/>
+        </div>
+        <div class="col-lg-4">
+            <input type="text" ng-model="oldperson.age" class="form-control" style="margin:1%" required/>
+        </div>
+        <div class="col">
+            <input type="button" style="margin:1%" ng-click="update(oldperson.id)" class="btn btn-primary col"
+                   value="Update Person"/>
+        </div>
+    </div>
+    <hr/>
+    <div class="row" ng-show="listempty">
+        <div class="col">
+            <p class="form-control col" style="text-align-last:center; color:grey">List Empty</p>
+        </div>
+    </div>
+    <div class="row" ng-hide="listempty" ng-repeat="x in listpersons" id="div{{x.id}}">
+        <div class="col-lg-4">
+            <p class=" form-control" style="margin:1%">{{x.name}}</p>
+        </div>
+        <div class="col-lg-4">
+            <p class=" form-control" style="margin:1%">{{x.age}}</p>
+        </div>
+        <div class="col">
+            <input type="button" style="margin:1%" ng-click="edit(x.id)" value="Edit" class="btn btn-warning col"/>
+        </div>
+        <div class="col">
+            <input type="button" style="margin:1%" ng-click="delete(x.id)" value="Delete" class="btn btn-danger col"/>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
